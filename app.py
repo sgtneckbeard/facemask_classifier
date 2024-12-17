@@ -1,13 +1,9 @@
 """
-run this command in terminal to run the app
-streamlit run app.py
-"""
+run one of these commands in terminal to run the app
 
-import streamlit as st
-from PIL import Image
-import numpy as np
-import tensorflow as tf
-import cv2
+streamlit run app.py
+python -m streamlit run app.py
+"""
 
 import streamlit as st
 from PIL import Image
