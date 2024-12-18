@@ -62,7 +62,7 @@ def main():
                 st.image(image, caption='Captured Image', use_container_width=True)
 
     with col2:
-        if st.button('Classify', type='primary'):
+        if st.button('CLASSIFY IMAGE', type='primary', icon="😷", use_container_width=True):
             if 'image' in locals():
                 with st.spinner('Processing...'):
                     processed_image = preprocess_image(image)
@@ -77,5 +77,6 @@ def main():
                     st.write(f"Confidence: {confidence:.2%}")
             else:
                 st.warning("Please upload an image or take a photo first")
+
 if __name__ == '__main__':
     main()
