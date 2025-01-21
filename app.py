@@ -10,6 +10,7 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 import cv2
+import streamlit.components.v1 as components
 
 @st.cache_resource
 def load_model():
@@ -27,6 +28,14 @@ def preprocess_image(image):
     img_array = img_array / 255.0 # normalize pixel values to 0-1 range
     img_array = img_array.reshape(1, 224, 300, 1) # reshape to model input shape
     return img_array
+
+def scroll_to_bottom():
+    scroll_script = """
+    <script>
+    window.scrollTo(0, document.body.scrollHeight);
+    </script>
+    """
+    components.html(scroll_script)
 
 def main():
     st.set_page_config(page_title="Face Mask Classifier", layout="wide") # set page title and layout
@@ -66,6 +75,7 @@ def main():
                 mirrored_image = Image.fromarray(mirrored_image) # convert back to PIL image
                 st.image(mirrored_image, caption='Mirrored Preview', use_container_width=True) # display mirrored preview
                 image = Image.fromarray(image) # convert original image back to PIL image for processing
+                scroll_to_bottom() # Scroll to the bottom of the page
 
     with col2: # display classification results
         if st.button('CLASSIFY IMAGE', type='primary', icon="😷", use_container_width=True): 
