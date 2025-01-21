@@ -28,6 +28,32 @@ def preprocess_image(image):
     img_array = img_array.reshape(1, 224, 300, 1) # reshape to model input shape
     return img_array
 
+def capture_image():
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        st.error("Error: Could not open webcam.")
+        return None
+
+    captured_image = None
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        mirrored_frame = cv2.flip(frame, 1)  # Mirror the frame horizontally
+        cv2.imshow('Align your face', mirrored_frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('c'):  # Press 'c' to capture the image
+            captured_image = frame
+            break
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to quit without capturing
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    return captured_image
+
 def main():
     st.set_page_config(page_title="Face Mask Classifier", layout="wide") # set page title and layout
     
@@ -56,11 +82,12 @@ def main():
                 image = Image.open(uploaded_file) 
                 st.image(image, caption='Uploaded Image', use_container_width=True) 
         else: # if user chooses to use webcam
-            img_file_buffer = st.camera_input("Take a photo")
-            if img_file_buffer: # if user has taken a photo with webcam
-                image = Image.open(img_file_buffer) # open image from buffer
-                image = image.transpose(Image.FLIP_LEFT_RIGHT)  # mirror image horizontally for more natural user experience
-                st.image(image, caption='Captured Image', use_container_width=True) # display image for user to see
+            if st.button('Start Webcam'):
+                image = capture_image()
+                if image is not None:
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    image = Image.fromarray(image)
+                    st.image(image, caption='Captured Image', use_container_width=True) # display image for user to see
 
     with col2: # display classification results
         if st.button('CLASSIFY IMAGE', type='primary', icon="😷", use_container_width=True): 
