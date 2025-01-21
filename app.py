@@ -32,10 +32,21 @@ def preprocess_image(image):
 def scroll_to_bottom():
     scroll_script = """
     <script>
-    window.scrollTo(0, document.body.scrollHeight);
+        function scrollToBottom() {
+            window.setTimeout(function() {
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 500);
+        }
+        scrollToBottom();
     </script>
     """
-    components.html(scroll_script)
+    try:
+        components.html(scroll_script, height=0)
+    except Exception as e:
+        st.error(f"Failed to scroll: {e}")
 
 def main():
     st.set_page_config(page_title="Face Mask Classifier", layout="wide") # set page title and layout
