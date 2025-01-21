@@ -29,7 +29,14 @@ def preprocess_image(image):
     return img_array
 
 def capture_image():
-    cap = cv2.VideoCapture(0)
+    for index in range(5):  # Try different camera indices
+        cap = cv2.VideoCapture(index)
+        if cap.isOpened():
+            break
+    else:
+        st.error("Error: Could not open webcam.")
+        return None
+
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     captured_image = None
 
