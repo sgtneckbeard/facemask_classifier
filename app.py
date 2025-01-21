@@ -68,13 +68,7 @@ def main():
             img_file_buffer = st.camera_input("Take a photo")
             if img_file_buffer: # if user has taken a photo with webcam
                 image = Image.open(img_file_buffer) # open image from buffer
-                image = np.array(image) # convert to numpy array
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR) # convert to BGR for OpenCV
-                mirrored_image = cv2.flip(image, 1) # mirror image horizontally for preview
-                mirrored_image = cv2.cvtColor(mirrored_image, cv2.COLOR_BGR2RGB) # convert back to RGB
-                mirrored_image = Image.fromarray(mirrored_image) # convert back to PIL image
-                st.image(mirrored_image, caption='Mirrored Preview', use_container_width=True) # display mirrored preview
-                image = Image.fromarray(image) # convert original image back to PIL image for processing
+                st.image(image, caption='Captured Image', use_container_width=True) # display image for user to see
                 scroll_to_bottom() # Scroll to the bottom of the page
 
     with col2: # display classification results
