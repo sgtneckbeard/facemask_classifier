@@ -1,5 +1,5 @@
 """
-run one of these commands in terminal to run the app
+Run one of these commands in terminal to run the app
 
 streamlit run app.py
 python -m streamlit run app.py
@@ -28,8 +28,39 @@ def preprocess_image(image):
     img_array = img_array.reshape(1, 224, 300, 1) # reshape to model input shape
     return img_array
 
+def capture_image():
+    cap = cv2.VideoCapture(0)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    captured_image = None
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame = cv2.flip(frame, 1)  # Mirror the frame horizontally
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(100, 100))
+
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            roi_color = frame[y:y+h, x:x+w]
+            if w > 200 and h > 200:  # Check if the face is properly aligned and large enough
+                captured_image = frame
+                break
+
+        cv2.imshow('Align your face', frame)
+        if captured_image is not None:
+            break
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    return captured_image
+
 def main():
-    st.set_page_config(page_title="Face Mask Classifier", layout="wide") # set page title and layout
+    st.set_page_config(page_title="Face Mask Classifier (experimental branch)", layout="wide") # set page title and layout
     
     model = load_model()
     # Define class labels
@@ -56,11 +87,12 @@ def main():
                 image = Image.open(uploaded_file) 
                 st.image(image, caption='Uploaded Image', use_container_width=True) 
         else: # if user chooses to use webcam
-            img_file_buffer = st.camera_input("Take a photo")  
-            if img_file_buffer: # if user has taken a photo with webcam
-                image = Image.open(img_file_buffer) # open image from buffer
-                image = image.transpose(Image.FLIP_LEFT_RIGHT)  # mirror image horizontally for more natural user experience
-                st.image(image, caption='Captured Image', use_container_width=True) # display image for user to see
+            if st.button('Start Webcam'):
+                image = capture_image()
+                if image is not None:
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    image = Image.fromarray(image)
+                    st.image(image, caption='Captured Image', use_container_width=True) # display image for user to see
 
     with col2: # display classification results
         if st.button('CLASSIFY IMAGE', type='primary', icon="😷", use_container_width=True): 
