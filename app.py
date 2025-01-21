@@ -28,8 +28,8 @@ def preprocess_image(image):
     img_array = img_array.reshape(1, 224, 300, 1) # reshape to model input shape
     return img_array
 
-def capture_image():
-    cap = cv2.VideoCapture(0)
+def capture_image(camera_index):
+    cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
         st.error("Error: Could not open webcam.")
         return None
@@ -82,8 +82,9 @@ def main():
                 image = Image.open(uploaded_file) 
                 st.image(image, caption='Uploaded Image', use_container_width=True) 
         else: # if user chooses to use webcam
+            camera_index = st.selectbox("Select Camera", options=[0, 1, 2, 3, 4], index=0)
             if st.button('Start Webcam'):
-                image = capture_image()
+                image = capture_image(camera_index)
                 if image is not None:
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                     image = Image.fromarray(image)
