@@ -60,7 +60,7 @@ def capture_image():
     return captured_image
 
 def main():
-    st.set_page_config(page_title="Face Mask Classifier (experimental branch)", layout="wide") # set page title and layout
+    st.set_page_config(page_title="Face Mask Classifier", layout="wide") # set page title and layout
     
     model = load_model()
     # Define class labels
@@ -73,7 +73,7 @@ def main():
         'type_3_below_chin': 'Mask Below Chin',
         'type_4_no_mask': 'No Mask'
     }
-    st.title("Face Mask Detection")
+    st.title("Face Mask Detection (experimental branch)")
     st.write("Upload an image or use webcam to detect face mask usage")
 
     col1, col2 = st.columns(2) # create columns for image input and classification
