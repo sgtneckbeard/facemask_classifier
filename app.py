@@ -34,21 +34,14 @@ def preprocess_image(image):
 def scroll_to_bottom():
     scroll_script = """
     <script>
-        function scrollToBottom() {
-            window.setTimeout(function() {
-                window.scrollTo({
-                    top: document.documentElement.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 500);
-        }
-        scrollToBottom();
+        setTimeout(function() {
+            const bottom = document.getElementById('bottom');
+            bottom.scrollIntoView({ behavior: 'smooth' });
+        }, 1000);
     </script>
     """
-    try:
-        components.html(scroll_script, height=0)
-    except Exception as e:
-        st.error(f"Failed to scroll: {e}")
+    st.components.v1.html(scroll_script, height=0)
+    st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
 
 def get_base64_overlay():
     overlay_path = Path(__file__).parent / "outline.png"
@@ -59,25 +52,26 @@ def get_base64_overlay():
 def add_camera_overlay():
     st.markdown("""
         <style>
-            .camera-container {
+            div.stCamera > div > div {
                 position: relative;
-                width: 100%;
             }
-            .overlay-image {
+            div.stCamera > div > div::before {
+                content: '';
                 position: absolute;
                 top: 0;
                 left: 0;
-                width: 100%;
-                height: 100%;
+                right: 0;
+                bottom: 0;
+                background-image: url(data:image/png;base64,""" + get_base64_overlay() + """);
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: contain;
                 opacity: 0.5;
                 pointer-events: none;
-                z-index: 1;
-            }
-            .stCamera {
-                z-index: 0;
+                z-index: 1000;
             }
         </style>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     
     st.markdown(f"""
         <div class="camera-container">
@@ -110,8 +104,8 @@ def main():
             if uploaded_file:
                 image = Image.open(uploaded_file) 
                 st.image(image, caption='Uploaded Image', use_container_width=True) 
-        else:
-            add_camera_overlay()  # Add overlay before camera input
+        else: # if user chooses to use webcam
+            add_camera_overlay()
             img_file_buffer = st.camera_input("Take a photo")
             if img_file_buffer:
                 image = Image.open(img_file_buffer)
