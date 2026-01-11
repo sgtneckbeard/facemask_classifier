@@ -5,6 +5,7 @@ streamlit run app.py
 python -m streamlit run app.py
 """
 
+from pathlib import Path
 import streamlit as st
 from PIL import Image
 import numpy as np
@@ -37,13 +38,23 @@ def main():
     
     # Display labels for UI
     display_labels = {
-        'type_1_mask_on': 'Mask Fully On',
-        'type_2_nose_exposed': 'Nose Exposed',
-        'type_3_below_chin': 'Mask Below Chin',
-        'type_4_no_mask': 'No Mask'
+        'type_1_mask_on': '✅ Mask Fully On',
+        'type_2_nose_exposed': '⚠️ Nose Exposed',
+        'type_3_below_chin': '❌ Mask Below Chin',
+        'type_4_no_mask': '🚫 No Mask'
     }
+    
     st.title("Face Mask Detection")
     st.write("Upload an image or use webcam to detect face mask usage")
+
+        # Map each class to an image in ./images (adjust filenames as needed)
+    base_dir = Path(__file__).parent
+    label_images = {
+        'type_1_mask_on': base_dir / 'images' / '1_mask_on.png',
+        'type_2_nose_exposed': base_dir / 'images' / '2_nose_exposed.png',
+        'type_3_below_chin': base_dir / 'images' / '3_below_chin.png',
+        'type_4_no_mask': base_dir / 'images' / '4_no_mask.png',
+    }
 
     col1, col2 = st.columns(2)
     
@@ -72,9 +83,17 @@ def main():
                     confidence = float(np.max(prediction))
                     
                     st.success("Classification complete!")
-                    st.metric("Prediction", display_class)
-                    st.progress(confidence)
-                    st.write(f"Confidence: {confidence:.2%}")
+                    col_img, col_info = st.columns([1, 2])
+                    with col_img:
+                        img_path = label_images.get(predicted_class)
+                        if img_path and img_path.is_file():
+                            st.image(str(img_path), width=160)
+                        else:
+                            st.write("Image not found for this label.")
+                    with col_info:
+                        st.metric("Prediction", display_class)
+                        st.progress(confidence)
+                        st.write(f"Confidence: {confidence:.2%}")
             else:
                 st.warning("Please upload an image or take a photo first")
 
