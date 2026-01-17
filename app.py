@@ -125,7 +125,7 @@ def preprocess_image(image):
     return img_array
 
 def main():
-    st.set_page_config(page_title="Face Mask Classifier", layout="wide")
+    st.set_page_config(page_title="Face Mask Classifier (Auto-crop Branch)", layout="wide")
     
     model = load_model()
     face_detector = load_detectors()
