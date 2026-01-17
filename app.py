@@ -22,14 +22,14 @@ def load_model():
 
 @st.cache_resource
 def load_detectors():
-    """Load OpenCV DNN face detector for better masked face detection"""
-    # Load pre-trained face detection model (DNN-based, more accurate than Haar Cascade)
+    """Load OpenCV Haar Cascade face detector"""
+    # Load pre-trained Haar Cascade face detection model
     model_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
     face_cascade = cv2.CascadeClassifier(model_file)
     return face_cascade
 
 def detect_face_opencv(image, face_detector):
-    """Detect face using OpenCV Haar Cascade (works better with masks)"""
+    """Detect face using OpenCV Haar Cascade"""
     img_array = np.array(image)
     
     # Convert to grayscale for face detection
@@ -39,11 +39,11 @@ def detect_face_opencv(image, face_detector):
         gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
     
     # Detect faces with adjusted parameters for masked faces
-    # Lower scaleFactor and minNeighbors to detect partially obscured faces
+    # Lower scaleFactor and minNeighbors to be more sensitive
     faces = face_detector.detectMultiScale(
         gray,
         scaleFactor=1.05,  # Smaller steps for better detection
-        minNeighbors=3,     # Lower threshold for masked faces
+        minNeighbors=3,     # Lower threshold for increased sensitivity
         minSize=(30, 30),   # Minimum face size
         flags=cv2.CASCADE_SCALE_IMAGE
     )
