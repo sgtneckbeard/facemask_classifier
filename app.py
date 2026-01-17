@@ -11,7 +11,6 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 import cv2
-import mediapipe as mp
 
 @st.cache_resource
 def load_model():
@@ -23,61 +22,46 @@ def load_model():
 
 @st.cache_resource
 def load_detectors():
-    """Load MediaPipe FaceMesh for better masked face detection"""
-    mp_face_mesh = mp.solutions.face_mesh
-    return mp_face_mesh.FaceMesh(
-        static_image_mode=True,
-        max_num_faces=1,
-        refine_landmarks=True,
-        min_detection_confidence=0.3,
-        min_tracking_confidence=0.3
-    )
+    """Load OpenCV DNN face detector for better masked face detection"""
+    # Load pre-trained face detection model (DNN-based, more accurate than Haar Cascade)
+    model_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+    face_cascade = cv2.CascadeClassifier(model_file)
+    return face_cascade
 
-def detect_face_mediapipe(image, face_detector):
-    """Detect face using MediaPipe FaceMesh (works better with masks)"""
+def detect_face_opencv(image, face_detector):
+    """Detect face using OpenCV Haar Cascade (works better with masks)"""
     img_array = np.array(image)
     
-    # MediaPipe expects RGB
+    # Convert to grayscale for face detection
     if len(img_array.shape) == 2:
-        img_rgb = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
+        gray = img_array
     else:
-        img_rgb = img_array if img_array.shape[2] == 3 else cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+        gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
     
-    results = face_detector.process(img_rgb)
+    # Detect faces with adjusted parameters for masked faces
+    # Lower scaleFactor and minNeighbors to detect partially obscured faces
+    faces = face_detector.detectMultiScale(
+        gray,
+        scaleFactor=1.05,  # Smaller steps for better detection
+        minNeighbors=3,     # Lower threshold for masked faces
+        minSize=(30, 30),   # Minimum face size
+        flags=cv2.CASCADE_SCALE_IMAGE
+    )
     
-    if not results.multi_face_landmarks:
+    if len(faces) == 0:
         return [], None
     
-    h, w = img_array.shape[:2]
     detections = []
+    for (x, y, w, h) in faces:
+        detections.append((x, y, w, h))
     
-    for face_landmarks in results.multi_face_landmarks:
-        # Get all landmark points
-        x_coords = [landmark.x * w for landmark in face_landmarks.landmark]
-        y_coords = [landmark.y * h for landmark in face_landmarks.landmark]
-        
-        # Calculate bounding box from landmarks
-        x_min = int(min(x_coords))
-        y_min = int(min(y_coords))
-        x_max = int(max(x_coords))
-        y_max = int(max(y_coords))
-        
-        width = x_max - x_min
-        height = y_max - y_min
-        
-        # Clamp to image bounds
-        x_min = max(0, x_min)
-        y_min = max(0, y_min)
-        
-        detections.append((x_min, y_min, width, height))
-    
-    return detections, 'facemesh'
+    return detections, 'opencv'
 
 def smart_crop(image, face_detector, padding_horizontal=0.2, padding_vertical=0.3):
     """
-    Smart crop using MediaPipe face detection.
+    Smart crop using OpenCV face detection.
     """
-    detections, detection_type = detect_face_mediapipe(image, face_detector)
+    detections, detection_type = detect_face_opencv(image, face_detector)
     
     if len(detections) == 0:
         return None, False, None
@@ -130,7 +114,7 @@ def main():
     model = load_model()
     face_detector = load_detectors()
     
-    # Padding configuration (MediaPipe uses relative padding)
+    # Padding configuration (OpenCV uses relative padding)
     PADDING_HORIZONTAL = 0.2  # 20% of face width
     PADDING_VERTICAL = 0.7    # 70% of face height
     
@@ -163,7 +147,7 @@ def main():
         input_option = st.radio("Select Input:", ["Upload Image", "Use Webcam"])
         
         auto_crop = st.checkbox("Auto-crop (recommended)", value=True, 
-                               help="Automatically crops to face region using MediaPipe")
+                               help="Automatically crops to face region using OpenCV")
         
         if input_option == "Upload Image":
             uploaded_file = st.file_uploader("Choose an image...", type=['jpg', 'jpeg', 'png'])
