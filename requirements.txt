@@ -1,10 +1,10 @@
-# For Windows/Linux
+# For Windows/Linux/Streamlit Cloud
 streamlit
 tensorflow
 opencv-python
 pillow
 numpy
-mediapipe
+mediapipe==0.10.9  
 
 # For macOS (M-series chips) - M4 MBP Tahoe 26.2
 # numpy==1.26.4
