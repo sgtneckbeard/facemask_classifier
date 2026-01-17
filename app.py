@@ -104,22 +104,19 @@ def preprocess_image(image):
     img_array = np.array(image)
     if len(img_array.shape) == 3:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
-    
-    # Increase brightness and contrast for low-light conditions
-    # Brightness: add value to all pixels
-    brightness_gain = 20  # Increase this for more brightness (0-100)
-    img_array = np.clip(img_array + brightness_gain, 0, 255)
-    
-    # Contrast: stretch the range of pixel values
-    contrast_factor = 1.3  # Increase this for more contrast (1.0 = no change)
-    img_array = cv2.convertScaleAbs(img_array, alpha=contrast_factor, beta=0)
-    
-    # Optional: CLAHE (Contrast Limited Adaptive Histogram Equalization) for better local contrast
+
+    # Moderated brightness and highlight clipping
+    brightness_beta = 13   # was +20; lower to avoid blown highlights
+    contrast_alpha = 1.2  # was 1.3; gentler contrast
+    # Clip very bright pixels to the 99th percentile to prevent black crush
+    hi = np.percentile(img_array, 99)
+    img_array = np.clip(img_array, 0, hi)
+    img_array = cv2.convertScaleAbs(img_array, alpha=contrast_alpha, beta=brightness_beta)
+
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     img_array = clahe.apply(np.uint8(img_array))
-    
-    # Direct resize to match training (no letterboxing/padding)
-    img_array = cv2.resize(img_array, (300, 224))  # width=300, height=224
+
+    img_array = cv2.resize(img_array, (300, 224))
     img_array = img_array / 255.0
     img_array = img_array.reshape(1, 224, 300, 1)
     return img_array
