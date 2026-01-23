@@ -1,11 +1,11 @@
 # For Windows/Linux/Streamlit Cloud
-streamlit==1.53.0
-tensorflow==2.14.0
-numpy==1.26.4
-opencv-python==4.8.1.78
-mediapipe==0.10.9
-protobuf==3.20.3
-pillow==12.1.0
+streamlit>=1.28.0
+tensorflow>=2.14.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+protobuf>=3.20.0
+pillow>=10.0.0
 
 # For macOS (M-series chips) - M4 MBP Tahoe 26.2
 # numpy==1.26.4

@@ -3,10 +3,12 @@ import numpy as np
 import cv2
 import mediapipe as mp
 from PIL import Image
+import streamlit as st
 
 PADDING_HORIZONTAL = 0.2
 PADDING_VERTICAL = 0.7
 
+@st.cache_resource
 def load_detectors():
     mp_face_mesh = mp.solutions.face_mesh
     return mp_face_mesh.FaceMesh(
