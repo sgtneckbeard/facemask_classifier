@@ -1,6 +1,5 @@
 from typing import Tuple, List
 import numpy as np
-import cv2
 import mediapipe as mp
 from PIL import Image
 import streamlit as st
@@ -22,9 +21,11 @@ def load_detectors():
 def detect_face_mediapipe(image: Image.Image, face_detector) -> Tuple[List[Tuple[int,int,int,int]], str | None]:
     img_array = np.array(image)
     if len(img_array.shape) == 2:
-        img_rgb = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
+        img_rgb = np.stack([img_array] * 3, axis=-1)
+    elif img_array.shape[2] == 4:
+        img_rgb = img_array[:, :, :3]
     else:
-        img_rgb = img_array if img_array.shape[2] == 3 else cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+        img_rgb = img_array
     results = face_detector.process(img_rgb)
     if not results.multi_face_landmarks:
         return [], None
